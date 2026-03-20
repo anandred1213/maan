@@ -5,7 +5,9 @@ import com.practise.revision.dto.OrderDto;
 import com.practise.revision.dto.UserDto;
 import com.practise.revision.dto.UserEvent;
 import com.practise.revision.producer.UserEventProducer;
-import com.practise.revision.service.UserService;
+import com.practise.revision.service.OrderService;
+import com.practise.revision.service.UserManagementService;
+import com.practise.revision.service.serviceImpl.UserProfileImageService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -17,7 +19,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -29,10 +31,16 @@ class UserControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
-    private UserService userService;
+    private UserManagementService userManagementService;
+
+    @MockBean
+    private OrderService orderService;
 
     @MockBean
     private UserEventProducer userEventProducer;
+
+    @MockBean
+    private UserProfileImageService userProfileImageService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -44,36 +52,36 @@ class UserControllerTest {
         userDto.setEmail("john@example.com");
 
         UserDto createdUser = new UserDto();
-        createdUser.setId(1);
+        createdUser.setId(1L);
         createdUser.setName("John Doe");
         createdUser.setEmail("john@example.com");
 
-        when(userService.createUser(any(UserDto.class))).thenReturn(createdUser);
+        when(userManagementService.createUser(any(UserDto.class))).thenReturn(createdUser);
 
-        mockMvc.perform(post("/users/addUser")
+        mockMvc.perform(post("/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(userDto)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.name").value("John Doe"));
 
-        verify(userService).createUser(any(UserDto.class));
+        verify(userManagementService).createUser(any(UserDto.class));
     }
 
     @Test
     void getUser_Success() throws Exception {
         UserDto userDto = new UserDto();
-        userDto.setId(1);
+        userDto.setId(1L);
         userDto.setName("John Doe");
 
-        when(userService.getUser(1)).thenReturn(userDto);
+        when(userManagementService.getUser(1L)).thenReturn(userDto);
 
         mockMvc.perform(get("/users/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.name").value("John Doe"));
 
-        verify(userService).getUser(1);
+        verify(userManagementService).getUser(1L);
     }
 
     @Test
@@ -82,30 +90,28 @@ class UserControllerTest {
         userDto.setName("Updated Name");
 
         UserDto updatedUser = new UserDto();
-        updatedUser.setId(1);
+        updatedUser.setId(1L);
         updatedUser.setName("Updated Name");
 
-        when(userService.updateUser(anyInt(), any(UserDto.class))).thenReturn(updatedUser);
+        when(userManagementService.updateUser(any(UserDto.class))).thenReturn(updatedUser);
 
-        mockMvc.perform(put("/users/updateUser?id=1")
+        mockMvc.perform(put("/users/updateUser")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(userDto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Updated Name"));
 
-        verify(userService).updateUser(1, userDto);
+        verify(userManagementService).updateUser(any(UserDto.class));
     }
 
     @Test
     void deleteUser_Success() throws Exception {
-        doNothing().when(userService).deleteUser(1);
+        doNothing().when(userManagementService).deleteUser(1L);
 
         mockMvc.perform(delete("/users/deleteUser/1"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("User deleted successfully"))
-                .andExpect(jsonPath("$.userId").value("1"));
+                .andExpect(status().isNoContent());
 
-        verify(userService).deleteUser(1);
+        verify(userManagementService).deleteUser(1L);
     }
 
     @Test
@@ -133,7 +139,7 @@ class UserControllerTest {
         order2.setOrderId(2L);
         List<OrderDto> orders = Arrays.asList(order1, order2);
 
-        when(userService.getUserOrders(1)).thenReturn(orders);
+        when(orderService.getUserOrders(1L)).thenReturn(orders);
 
         mockMvc.perform(get("/users/1/orders"))
                 .andExpect(status().isOk())
@@ -141,6 +147,6 @@ class UserControllerTest {
                 .andExpect(jsonPath("$[0].orderId").value(1))
                 .andExpect(jsonPath("$[1].orderId").value(2));
 
-        verify(userService).getUserOrders(1);
+        verify(orderService).getUserOrders(1L);
     }
 }

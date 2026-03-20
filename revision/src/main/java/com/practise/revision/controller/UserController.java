@@ -1,22 +1,18 @@
 package com.practise.revision.controller;
 
-import com.practise.revision.dto.AuthRequest;
 import com.practise.revision.dto.OrderDto;
 import com.practise.revision.dto.UserDto;
 import com.practise.revision.dto.UserEvent;
-import com.practise.revision.entity.UserProfileImage;
 import com.practise.revision.producer.UserEventProducer;
-import com.practise.revision.security.JwtUtil;
 import com.practise.revision.service.OrderService;
 import com.practise.revision.service.UserManagementService;
-
 import com.practise.revision.service.serviceImpl.UserProfileImageService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -31,6 +27,7 @@ public class UserController {
     private final UserManagementService userManagementService;
     private final OrderService orderService;
     private final UserEventProducer userEventProducer;
+    private static final Logger log = LoggerFactory.getLogger(UserController.class);
 
     private final UserProfileImageService userProfileImageService;
 
@@ -50,20 +47,9 @@ public class UserController {
         UserDto createdUser = userManagementService.createUser(userDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
-
-
-    /*
-    * endpoint to login the user
-    *
-    */
-    @PostMapping("/login")
-    public ResponseEntity<UserDto> login(@Valid @RequestBody AuthRequest authRequest) {
-        UserDto loggedInUser = userManagementService.getUser(authRequest);
-        return ResponseEntity.ok(loggedInUser);
-    }
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public ResponseEntity<UserDto> getUser(@PathVariable int id){
+    public ResponseEntity<UserDto> getUser(@PathVariable Long id){
         UserDto user = userManagementService.getUser(id);
         return ResponseEntity.ok(user);
     }
@@ -83,14 +69,14 @@ public class UserController {
     
     @DeleteMapping("/deleteUser/{id}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Map<String, String>> deleteUser(@PathVariable Long id){
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id){
         userManagementService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}/orders")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public ResponseEntity<List<OrderDto>> getUserOrders(@PathVariable Integer id) {
+    public ResponseEntity<List<OrderDto>> getUserOrders(@PathVariable Long id) {
         List<OrderDto> orders = orderService.getUserOrders(id);
         return ResponseEntity.ok(orders);
     }
@@ -102,9 +88,12 @@ public class UserController {
         return ResponseEntity.ok(users);
     }
 
-    public ResponseEntity<Void> uploadProfileImage(@RequestParam("file") MultipartFile file){
+    @PostMapping("/profile-image")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<Map<String, String>> uploadProfileImage(@RequestParam("file") MultipartFile file) {
+        log.info("Uploading profile image for user: {}", file.getOriginalFilename());
         userProfileImageService.uploadProfileImage(file);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(Map.of("message", "Profile image uploaded successfully"));
     }
 
 }

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HexFormat;
 import java.util.Map;
 
 /**
@@ -32,14 +33,13 @@ public class JwtUtil {
     @Value("${jwt.expiration}")
     private Long expiration;
 
-    CustomUserDetails customUserDetails;
-
     /**
      * Generate signing key from secret
      * Converts secret string to SecretKey for HMAC-SHA signing
      */
     private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(secret.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        byte[] keyBytes = HexFormat.of().parseHex(secret);
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 
     /**
@@ -56,21 +56,19 @@ public class JwtUtil {
      * @return JWT token string
      */
     public String generateToken(UserDetails userDetails) {
-
         Map<String, Object> claims = new HashMap<>();
-
-        claims.put("roles",
-                customUserDetails.getAuthorities()
+        claims.put("roles", userDetails.getAuthorities()
                 .stream()
                 .map(GrantedAuthority::getAuthority)
                 .toList());
         log.info("Generating JWT token for user: {}", userDetails.getUsername());
         return Jwts.builder()
-                .subject(userDetails.getUsername())  // Step 1: Set user identifier
-                .issuedAt(new Date())  // Step 2: Set issue time
-                .expiration(new Date(System.currentTimeMillis() + expiration))  // Step 3: Set expiration
-                .signWith(getSigningKey())  // Step 4: Sign token
-                .compact();  // Step 5: Build compact string
+                .claims(claims)
+                .subject(userDetails.getUsername())
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + expiration))
+                .signWith(getSigningKey())
+                .compact();
     }
 
     /**
@@ -96,13 +94,13 @@ public class JwtUtil {
      */
     public boolean validateToken(String token) {
         try {
-            extractClaims(token);  // Step 1: Parse token
-            boolean isValid = !isTokenExpired(token);  // Step 2 & 3: Check expiration
+            Claims claims = extractClaims(token);
+            boolean isValid = !claims.getExpiration().before(new Date());
             log.debug("Token validation result: {}", isValid);
             return isValid;
         } catch (Exception e) {
-            log.warn("Token validation failed", e);
-            return false;  // Step 4: Invalid token
+            log.warn("Token validation failed: {}", e.getMessage());
+            return false;
         }
     }
 
@@ -118,11 +116,6 @@ public class JwtUtil {
                 .getPayload();  // Extract claims
     }
 
-    /**
-     * Check if token is expired
-     * @param token JWT token
-     * @return true if expired, false otherwise
-     */
     private boolean isTokenExpired(String token) {
         return extractClaims(token).getExpiration().before(new Date());
     }

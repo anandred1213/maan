@@ -3,11 +3,11 @@ package com.practise.revision.dto;
 public class OrderDto {
     private Long orderId;
     private String orderDetails;
-    private Integer userId;
+    private Long userId;
 
     public OrderDto() {}
 
-    public OrderDto(Long orderId, String orderDetails, Integer userId) {
+    public OrderDto(Long orderId, String orderDetails, Long userId) {
         this.orderId = orderId;
         this.orderDetails = orderDetails;
         this.userId = userId;
@@ -29,11 +29,11 @@ public class OrderDto {
         this.orderDetails = orderDetails;
     }
 
-    public Integer getUserId() {
+    public Long getUserId() {
         return userId;
     }
 
-    public void setUserId(Integer userId) {
+    public void setUserId(Long userId) {
         this.userId = userId;
     }
 

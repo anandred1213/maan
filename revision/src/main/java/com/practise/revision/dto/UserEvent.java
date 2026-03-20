@@ -1,15 +1,15 @@
 package com.practise.revision.dto;
 
 public class UserEvent {
-        private int id;
+        private Long id;
         private  String name;
         private String email;
 
-        public int getId() {
+        public Long getId() {
             return id;
         }
 
-        public void setId(int id) {
+        public void setId(Long id) {
             this.id = id;
         }
 
@@ -29,7 +29,7 @@ public class UserEvent {
             this.email = email;
         }
 
-    public UserEvent(int id, String name, String email) {
+    public UserEvent(Long id, String name, String email) {
         this.id = id;
         this.name = name;
         this.email = email;

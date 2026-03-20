@@ -57,9 +57,13 @@ services:
     depends_on:
       - kafka
       - eureka-server
+      - minio
     environment:
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=host.docker.internal:9092
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - MINIO_URL=http://minio:9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin123
     networks:
       - micro-net
 
@@ -108,6 +112,26 @@ services:
       timeout: 20s
       retries: 10
 
+  minio:
+    image: minio/minio
+    container_name: minio
+    ports:
+      - "9090:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio-data:/data
+    networks:
+      - micro-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   product-microservice:
     build: ./product-microservice
     container_name: product-service
@@ -141,3 +165,4 @@ networks:
 
 volumes:
   mysql-data:
+  minio-data:

@@ -48,7 +48,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         
         // Step 2 & 3: Check if header exists and starts with "Bearer "
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);  // Remove "Bearer " prefix
+            String token = authHeader.substring(7).trim();
+
+            if (token.isEmpty()) {
+                filterChain.doFilter(request, response);
+                return;
+            }
             
             // Step 4: Validate token
             if (JwtUtil.validateToken(token)) {
@@ -69,5 +74,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         
         // Step 8: Continue to next filter or controller
         filterChain.doFilter(request, response);
+
     }
 }

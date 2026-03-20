@@ -26,7 +26,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @CircuitBreaker(name="getUserOrdersCB", fallbackMethod = "getUserOrdersFallback")
-    public List<OrderDto> getUserOrders(Integer userId) {
+    public List<OrderDto> getUserOrders(Long userId) {
         try {
             String url = "http://order-microservice/orders/user/" + userId;
             ResponseEntity<List<OrderDto>> response = restTemplate.exchange(
@@ -48,7 +48,7 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
-    public List<OrderDto> getUserOrdersFallback(Integer userId, Throwable throwable) {
+    public List<OrderDto> getUserOrdersFallback(Long userId, Throwable throwable) {
         log.warn("Fallback: Unable to fetch orders for user {}. Reason: {}", userId, throwable.getMessage());
         return Arrays.asList(new OrderDto(0L, "Service unavailable - fallback response", userId));
     }

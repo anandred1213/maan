@@ -3,6 +3,8 @@ package com.practise.revision.service.serviceImpl;
 import com.practise.revision.dto.OrderDto;
 import com.practise.revision.dto.UserDto;
 import com.practise.revision.service.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,6 +20,7 @@ public class UserServiceImpl implements UserService {
     private final UserAuthenticationService authenticationService;
     private final OrderService orderService;
 
+
     public UserServiceImpl(UserManagementService userManagementService,
                           UserAuthenticationService authenticationService,
                           OrderService orderService) {
@@ -32,12 +35,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto getUser(Integer id) {
+    public UserDto getUser(Long id) {
         return userManagementService.getUser(id);
     }
 
     @Override
-    public UserDto updateUser(Integer id, UserDto userDto) {
+    public UserDto updateUser(Long id, UserDto userDto) {
         return userManagementService.updateUser(userDto);
     }
 
@@ -47,8 +50,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<OrderDto> getUserOrders(Integer userId) {
+    public List<OrderDto> getUserOrders(Long userId) {
         return orderService.getUserOrders(userId);
+    }
+
+    @Override
+    public List<UserDto> getAllUsers() {
+        return userManagementService.getAllUsers();
     }
 
     @Override

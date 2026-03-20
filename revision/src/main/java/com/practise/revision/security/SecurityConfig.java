@@ -56,7 +56,8 @@ public class SecurityConfig {
             // Step 2: Configure authorization rules
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // allow preflight
-                .requestMatchers("/auth/**", "/actuator/**","/users/register","/users/login").permitAll()  // Public endpoints
+                .requestMatchers("/auth/**", "/actuator/**","/users/register","/users/login")
+                    .permitAll()  // Public endpoints
                 .anyRequest().authenticated()  // All other endpoints require authentication
             )
             
