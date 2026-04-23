@@ -24,17 +24,17 @@ public class GatewayUserController {
 
 
 
-    @CircuitBreaker(name = "revisionServiceCB", fallbackMethod = "revisionFallback")
-    @TimeLimiter(name = "revisionServiceCB")
+    @CircuitBreaker(name = "userServiceCB", fallbackMethod = "userServiceFallback")
+    @TimeLimiter(name = "userServiceCB")
     @GetMapping("/{id}")
     public Mono<String> getUser(@PathVariable Integer id) {
         return webClient.get()
-                .uri("http://REVISION/users/{id}", id)
+                .uri("http://USER-SERVICE/users/{id}", id)
                 .retrieve()
                 .bodyToMono(String.class);
     }
 
-    public Mono<String> revisionFallback(Integer id, Throwable t) {
+    public Mono<String> userServiceFallback(Integer id, Throwable t) {
         return Mono.just("user service is temporarily unavailable");
     }
 
