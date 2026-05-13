@@ -19,6 +19,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Set;
 
+import static com.practise.userservice.utils.UserResponseMessage.buildUserResponse;
+
 @Service
 public class UserManagementServiceImpl implements UserManagementService {
 
@@ -111,12 +113,4 @@ public class UserManagementServiceImpl implements UserManagementService {
                 .toList();
     }
 
-    private UserResponse buildUserResponse(User user, String message) {
-        UserResponse response = new UserResponse();
-        response.setId(user.getId());
-        response.setName(user.getName());
-        response.setEmail(user.getEmail());
-        response.setMessage(message);
-        return response;
-    }
 }

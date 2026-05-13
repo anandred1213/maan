@@ -63,7 +63,8 @@ public class SecurityConfig {
                             "/swagger-resources",
                             "/swagger-resources/**",
                             "/webjars/**",
-                            "/configuration/**"
+                            "/configuration/**",
+                            "/maan/admin/adregister"
                     ).permitAll()
                     .anyRequest().authenticated()
             )
