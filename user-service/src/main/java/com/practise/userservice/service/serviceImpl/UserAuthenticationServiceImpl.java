@@ -31,7 +31,7 @@ public class UserAuthenticationServiceImpl implements UserAuthenticationService 
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
     private final UserProfileImageRepository userProfileImageRepository;
-    private final UserDto userDto;
+
 
     public UserAuthenticationServiceImpl(UserRepository userRepository,
                                          PasswordEncoder passwordEncoder,
@@ -39,7 +39,7 @@ public class UserAuthenticationServiceImpl implements UserAuthenticationService 
                                          CustomUserDetailsService customUserDetailsService,
                                          JwtUtil jwtUtil,
                                          AuthenticationManager authenticationManager,
-                                         UserProfileImageRepository userProfileImageRepository, UserDto userDto) {
+                                         UserProfileImageRepository userProfileImageRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.refreshTokenService = refreshTokenService;
@@ -47,7 +47,6 @@ public class UserAuthenticationServiceImpl implements UserAuthenticationService 
         this.jwtUtil = jwtUtil;
         this.authenticationManager = authenticationManager;
         this.userProfileImageRepository = userProfileImageRepository;
-        this.userDto = userDto;
     }
 
     @Override
@@ -59,9 +58,6 @@ public class UserAuthenticationServiceImpl implements UserAuthenticationService 
     @Override
     public AuthResponse login(AuthRequest request) {
 
-        if(!userDto.getPassword().equals(userDto.getConfirmPassword())) {
-            throw  new RuntimeException("password and confirm password does not match");
-        }
         Authentication authenticate = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );

@@ -42,6 +42,10 @@ public class UserManagementServiceImpl implements UserManagementService {
             throw new UserAlreadyExistException("user already found with the email");
         }
 
+        if(!userDto.getPassword().equals(userDto.getConfirmPassword())) {
+            throw  new IllegalArgumentException("password and confirm password do not match");
+        }
+
         User user = new User();
         user.setName(userDto.getName());
         user.setEmail(userDto.getEmail());
