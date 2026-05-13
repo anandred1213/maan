@@ -30,17 +30,19 @@ public class UserAuthenticationServiceImpl implements UserAuthenticationService 
     private final CustomUserDetailsService customUserDetailsService;
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
+    private  final User user;
 
     public UserAuthenticationServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder,
                                          RefreshTokenService refreshTokenService,
                                          CustomUserDetailsService customUserDetailsService,
-                                         JwtUtil jwtUtil, AuthenticationManager authenticationManager) {
+                                         JwtUtil jwtUtil, AuthenticationManager authenticationManager, User user) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.refreshTokenService = refreshTokenService;
         this.customUserDetailsService = customUserDetailsService;
         this.jwtUtil = jwtUtil;
         this.authenticationManager = authenticationManager;
+        this.user = user;
     }
 
     @Override
@@ -51,6 +53,10 @@ public class UserAuthenticationServiceImpl implements UserAuthenticationService 
 
     @Override
     public AuthResponse login(AuthRequest request) {
+
+        if (!user.getPassword().equals(user.getConfirmPassword())){
+            return new AuthResponse("password and confirm password not match",null,null,null,null);
+        }
         Authentication authenticate = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
