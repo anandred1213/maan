@@ -29,6 +29,11 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    @NotBlank(message = "Confirm Password is required")
+    @Transient // Not stored in database
+    @Column(nullable = false)
+    private String confirmPassword;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)
@@ -73,5 +78,13 @@ public class User {
 
     public void setRole(Set<Role> role) {
         this.roles = role;
+    }
+
+    public String getConfirmPassword() {
+        return confirmPassword;
+    }
+
+    public void setConfirmPassword(String confirmPassword) {
+        this.confirmPassword = confirmPassword;
     }
 }
