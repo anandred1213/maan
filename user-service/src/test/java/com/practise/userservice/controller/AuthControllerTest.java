@@ -49,7 +49,7 @@ class AuthControllerTest {
         request.setEmail("test@example.com");
         request.setPassword("password");
 
-        AuthResponse response = new AuthResponse("access-token", "refresh-token", 1L, "Test User", "test@example.com");
+        AuthResponse response = new AuthResponse("access-token", "refresh-token", 1L, "Test User", "test@example.com", null);
 
         when(authenticationService.login(any(AuthRequest.class))).thenReturn(response);
 

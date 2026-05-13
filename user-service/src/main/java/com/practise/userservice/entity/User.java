@@ -29,9 +29,7 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @NotBlank(message = "Confirm Password is required")
     @Transient // Not stored in database
-    @Column(nullable = false)
     private String confirmPassword;
 
     @ElementCollection(fetch = FetchType.EAGER)
@@ -84,7 +82,7 @@ public class User {
         return confirmPassword;
     }
 
-    public void setConfirmPassword(String confirmPassword) {
+    public void setConfirmPassword (String confirmPassword) {
         this.confirmPassword = confirmPassword;
     }
 }

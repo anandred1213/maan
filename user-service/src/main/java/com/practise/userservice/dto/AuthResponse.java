@@ -6,13 +6,15 @@ public class AuthResponse {
     private Long id;
     private String name;
     private String email;
+    private String profileImageUrl;
 
-    public AuthResponse(String accessToken, String refreshToken, Long id, String name, String email) {
+    public AuthResponse(String accessToken, String refreshToken, Long id, String name, String email, String profileImageUrl) {
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
         this.id = id;
         this.name = name;
         this.email = email;
+        this.profileImageUrl = profileImageUrl;
     }
 
     public String getAccessToken() { return accessToken; }
@@ -29,4 +31,7 @@ public class AuthResponse {
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
+
+    public String getProfileImageUrl() { return profileImageUrl; }
+    public void setProfileImageUrl(String profileImageUrl) { this.profileImageUrl = profileImageUrl; }
 }
