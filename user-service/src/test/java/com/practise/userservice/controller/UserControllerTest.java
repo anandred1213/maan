@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.practise.userservice.dto.OrderDto;
 import com.practise.userservice.dto.UserDto;
 import com.practise.userservice.dto.UserEvent;
+import com.practise.userservice.dto.UserResponse;
 import com.practise.userservice.producer.UserEventProducer;
 import com.practise.userservice.service.OrderService;
 import com.practise.userservice.service.UserManagementService;
@@ -19,7 +20,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -51,10 +51,11 @@ class UserControllerTest {
         userDto.setName("John Doe");
         userDto.setEmail("john@example.com");
 
-        UserDto createdUser = new UserDto();
+        UserResponse createdUser = new UserResponse();
         createdUser.setId(1L);
         createdUser.setName("John Doe");
         createdUser.setEmail("john@example.com");
+        createdUser.setMessage("User registered successfully");
 
         when(userManagementService.createUser(any(UserDto.class))).thenReturn(createdUser);
 
@@ -63,18 +64,19 @@ class UserControllerTest {
                 .content(objectMapper.writeValueAsString(userDto)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.name").value("John Doe"));
+                .andExpect(jsonPath("$.name").value("John Doe"))
+                .andExpect(jsonPath("$.message").value("User registered successfully"));
 
         verify(userManagementService).createUser(any(UserDto.class));
     }
 
     @Test
     void getUser_Success() throws Exception {
-        UserDto userDto = new UserDto();
-        userDto.setId(1L);
-        userDto.setName("John Doe");
+        UserResponse userResponse = new UserResponse();
+        userResponse.setId(1L);
+        userResponse.setName("John Doe");
 
-        when(userManagementService.getUser(1L)).thenReturn(userDto);
+        when(userManagementService.getUser(1L)).thenReturn(userResponse);
 
         mockMvc.perform(get("/users/1"))
                 .andExpect(status().isOk())
@@ -89,9 +91,10 @@ class UserControllerTest {
         UserDto userDto = new UserDto();
         userDto.setName("Updated Name");
 
-        UserDto updatedUser = new UserDto();
+        UserResponse updatedUser = new UserResponse();
         updatedUser.setId(1L);
         updatedUser.setName("Updated Name");
+        updatedUser.setMessage("User updated successfully");
 
         when(userManagementService.updateUser(any(UserDto.class))).thenReturn(updatedUser);
 
@@ -99,7 +102,8 @@ class UserControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(userDto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Updated Name"));
+                .andExpect(jsonPath("$.name").value("Updated Name"))
+                .andExpect(jsonPath("$.message").value("User updated successfully"));
 
         verify(userManagementService).updateUser(any(UserDto.class));
     }

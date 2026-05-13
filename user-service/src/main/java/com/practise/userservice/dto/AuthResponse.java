@@ -1,22 +1,28 @@
 package com.practise.userservice.dto;
 
+import com.practise.userservice.utils.Role;
+
+import java.util.Set;
+
 public class AuthResponse {
     private String accessToken;
     private String refreshToken;
     private Long id;
     private String name;
     private String email;
-    private String profileImageUrl;
 
-    public AuthResponse(String accessToken, String refreshToken, Long id, String name, String email, String profileImageUrl) {
+    private String profileImageUrl;
+    private Set<Role> role;
+
+    public AuthResponse(String accessToken, String refreshToken, Long id, String name, String email, String profileImageUrl, Set<Role> role) {
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
         this.id = id;
         this.name = name;
         this.email = email;
         this.profileImageUrl = profileImageUrl;
+        this.role=role;
     }
-
     public String getAccessToken() { return accessToken; }
     public void setAccessToken(String accessToken) { this.accessToken = accessToken; }
 
@@ -34,4 +40,12 @@ public class AuthResponse {
 
     public String getProfileImageUrl() { return profileImageUrl; }
     public void setProfileImageUrl(String profileImageUrl) { this.profileImageUrl = profileImageUrl; }
+
+    public Set<Role> getRole() {
+        return role;
+    }
+
+    public void setRole(Set<Role> role) {
+        this.role = role;
+    }
 }

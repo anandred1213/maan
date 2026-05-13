@@ -7,6 +7,7 @@ import com.practise.userservice.security.JwtUtil;
 import com.practise.userservice.service.RefreshTokenService;
 import com.practise.userservice.service.UserAuthenticationService;
 import com.practise.userservice.service.UserManagementService;
+import com.practise.userservice.utils.Role;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -15,7 +16,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -48,8 +51,10 @@ class AuthControllerTest {
         AuthRequest request = new AuthRequest();
         request.setEmail("test@example.com");
         request.setPassword("password");
+        Set<Role> roles = new HashSet<>();
+        roles.add(Role.USER);
 
-        AuthResponse response = new AuthResponse("access-token", "refresh-token", 1L, "Test User", "test@example.com", null);
+        AuthResponse response = new AuthResponse("access-token", "refresh-token", 1L, "Test User", "test@example.com", null,roles);
 
         when(authenticationService.login(any(AuthRequest.class))).thenReturn(response);
 

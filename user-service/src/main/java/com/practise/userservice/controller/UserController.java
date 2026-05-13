@@ -4,7 +4,9 @@ import com.practise.userservice.dto.FileUploadRequest;
 import com.practise.userservice.dto.OrderDto;
 import com.practise.userservice.dto.UserDto;
 import com.practise.userservice.dto.UserEvent;
+import com.practise.userservice.dto.UserResponse;
 import com.practise.userservice.producer.UserEventProducer;
+import com.practise.userservice.security.CustomUserDetails;
 import com.practise.userservice.service.OrderService;
 import com.practise.userservice.service.UserManagementService;
 import com.practise.userservice.service.serviceImpl.UserProfileImageService;
@@ -19,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -50,15 +53,29 @@ public class UserController {
 
     @PostMapping("/register")
     @Operation(summary = "Register a new user")
-    public ResponseEntity<UserDto> create(@Valid @RequestBody UserDto userDto) {
-        UserDto createdUser = userManagementService.createUser(userDto);
+    public ResponseEntity<UserResponse> create(@Valid @RequestBody UserDto userDto) {
+        UserResponse createdUser = userManagementService.createUser(userDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+    }
+    /**
+     * Logged-in user profile
+     */
+    @GetMapping("/me")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Get current logged-in user")
+    public ResponseEntity<UserResponse> getCurrentUser(
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        UserResponse response =
+                userManagementService.getUser(userDetails.getUser().getId());
+
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Get user by ID")
-    public ResponseEntity<UserDto> getUser(@PathVariable Long id) {
+    public ResponseEntity<UserResponse> getUser(@PathVariable Long id) {
         return ResponseEntity.ok(userManagementService.getUser(id));
     }
 
@@ -72,7 +89,7 @@ public class UserController {
     @PutMapping("/updateUser")
     @PreAuthorize("hasRole('USER')")
     @Operation(summary = "Update user")
-    public ResponseEntity<UserDto> updateUser(@RequestBody UserDto userDto) {
+    public ResponseEntity<UserResponse> updateUser(@RequestBody UserDto userDto) {
         log.info("Update request received - id: {}, name: {}, email: {}", userDto.getId(), userDto.getName(), userDto.getEmail());
         return ResponseEntity.ok(userManagementService.updateUser(userDto));
     }
@@ -95,7 +112,7 @@ public class UserController {
     @GetMapping("/v1/allUsers")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Get all users (Admin only)")
-    public ResponseEntity<List<UserDto>> getAllUsers() {
+    public ResponseEntity<List<UserResponse>> getAllUsers() {
         return ResponseEntity.ok(userManagementService.getAllUsers());
     }
 

@@ -2,6 +2,7 @@ package com.practise.userservice.service.serviceImpl;
 
 import com.practise.userservice.dto.UserDto;
 import com.practise.userservice.dto.UserEvent;
+import com.practise.userservice.dto.UserResponse;
 import com.practise.userservice.entity.User;
 import com.practise.userservice.exceptionHandling.exceptions.UserAlreadyExistException;
 import com.practise.userservice.exceptionHandling.exceptions.UserNotFoundException;
@@ -12,7 +13,6 @@ import com.practise.userservice.utils.Role;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +21,7 @@ import java.util.Set;
 
 @Service
 public class UserManagementServiceImpl implements UserManagementService {
-    
+
     private static final Logger log = LoggerFactory.getLogger(UserManagementServiceImpl.class);
     private final UserRepository userRepository;
     private final UserEventProducer userEventProducer;
@@ -36,14 +36,20 @@ public class UserManagementServiceImpl implements UserManagementService {
     }
 
     @Override
-    public UserDto createUser(UserDto userDto) {
-        User byEmail = userRepository.findByEmail(userDto.getEmail());
-        if(byEmail != null) {
-            throw new UserAlreadyExistException("user already found with the email");
+    public UserResponse createUser(UserDto userDto) {
+        if (userDto.getPassword() == null) {
+            throw new IllegalArgumentException("Password is required");
+        }
+        if (userDto.getConfirmPassword() == null) {
+            throw new IllegalArgumentException("Confirm password is required");
+        }
+        if (!userDto.getPassword().equals(userDto.getConfirmPassword())) {
+            throw new IllegalArgumentException("Password and confirm password do not match");
         }
 
-        if(!userDto.getPassword().equals(userDto.getConfirmPassword())) {
-            throw  new IllegalArgumentException("password and confirm password do not match");
+        User byEmail = userRepository.findByEmail(userDto.getEmail());
+        if (byEmail != null) {
+            throw new UserAlreadyExistException("User already exists with this email");
         }
 
         User user = new User();
@@ -53,56 +59,44 @@ public class UserManagementServiceImpl implements UserManagementService {
         user.setRole(Set.of(Role.USER));
 
         User saveToDb = userRepository.save(user);
-        UserDto userDto1 = new UserDto();
-        BeanUtils.copyProperties(saveToDb, userDto1);
-
         userEventProducer.sendUserCreatedEvent(new UserEvent(saveToDb.getId(), saveToDb.getName(), saveToDb.getEmail()));
-        return userDto1;
+
+        return buildUserResponse(saveToDb, "User registered successfully");
     }
 
     @Override
-    public UserDto getUser(Long id) {
-        return userRepository.findById(id)
-                .map(this::convertToUserDto)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
-    }
-
-    public UserDto readUserFallback(Long id, Throwable throwable) {
-        UserDto fallbackUser = new UserDto();
-        fallbackUser.setId(id);
-        fallbackUser.setName("user");
-        fallbackUser.setEmail("user@gmail.com");
-        return fallbackUser;
+    public UserResponse getUser(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
+        return buildUserResponse(user, null);
     }
 
     @Override
-    @CircuitBreaker(name="updateUserCB", fallbackMethod = "updateUserFallback")
-    public UserDto updateUser(UserDto userDto) {
+    @CircuitBreaker(name = "updateUserCB", fallbackMethod = "updateUserFallback")
+    public UserResponse updateUser(UserDto userDto) {
         if (userDto.getId() == null) {
             throw new IllegalArgumentException("User id must not be null");
         }
         User user = userRepository.findById(userDto.getId())
-                .orElseThrow(() -> new UserNotFoundException("user not found with the id: " + userDto.getId()));
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userDto.getId()));
 
         user.setName(userDto.getName());
         user.setEmail(userDto.getEmail());
 
         User save = userRepository.save(user);
-        UserDto userDto1 = new UserDto();
-        BeanUtils.copyProperties(save, userDto1);
-        return userDto1;
+        return buildUserResponse(save, "User updated successfully");
     }
 
-    public UserDto updateUserFallback(UserDto userDto, Throwable throwable) {
+    public UserResponse updateUserFallback(UserDto userDto, Throwable throwable) {
         log.warn("Circuit breaker triggered for updateUser, userId: {}, reason: {}",
                 userDto.getId(), throwable.getMessage());
-        UserDto fallback = new UserDto();
+        UserResponse fallback = new UserResponse();
         fallback.setId(userDto.getId());
         fallback.setName(userDto.getName());
         fallback.setEmail(userDto.getEmail());
+        fallback.setMessage("Update temporarily unavailable, please try again later");
         return fallback;
     }
-
 
     @Override
     public void deleteUser(Long id) {
@@ -110,16 +104,19 @@ public class UserManagementServiceImpl implements UserManagementService {
     }
 
     @Override
-    public List<UserDto> getAllUsers(){
+    public List<UserResponse> getAllUsers() {
         return userRepository.findAll()
-         .stream()
-         .map(this::convertToUserDto)
-         .toList();
+                .stream()
+                .map(user -> buildUserResponse(user, null))
+                .toList();
     }
 
-    private UserDto convertToUserDto(User user) {
-        UserDto userDto = new UserDto();
-        BeanUtils.copyProperties(user, userDto);
-        return userDto;
+    private UserResponse buildUserResponse(User user, String message) {
+        UserResponse response = new UserResponse();
+        response.setId(user.getId());
+        response.setName(user.getName());
+        response.setEmail(user.getEmail());
+        response.setMessage(message);
+        return response;
     }
 }

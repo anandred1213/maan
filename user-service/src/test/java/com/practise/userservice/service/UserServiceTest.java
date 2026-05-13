@@ -2,18 +2,16 @@ package com.practise.userservice.service;
 
 import com.practise.userservice.dto.UserDto;
 import com.practise.userservice.dto.UserEvent;
+import com.practise.userservice.dto.UserResponse;
 import com.practise.userservice.entity.User;
-import com.practise.userservice.exceptionHandling.exceptions.UserNotFoundException;
 import com.practise.userservice.producer.UserEventProducer;
 import com.practise.userservice.repository.UserRepository;
-import com.practise.userservice.security.JwtUtil;
 import com.practise.userservice.service.serviceImpl.UserManagementServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
@@ -34,15 +32,6 @@ class UserServiceTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
-    @Mock
-    private AuthenticationManager authenticationManager;
-
-    @Mock
-    private JwtUtil jwtUtil;
-
-    @Mock
-    private RefreshTokenService refreshTokenService;
-
     @InjectMocks
     private UserManagementServiceImpl userService;
 
@@ -52,6 +41,7 @@ class UserServiceTest {
         userDto.setName("John Doe");
         userDto.setEmail("john@example.com");
         userDto.setPassword("password123");
+        userDto.setConfirmPassword("password123");
 
         User savedUser = new User();
         savedUser.setId(1L);
@@ -63,7 +53,7 @@ class UserServiceTest {
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
         doNothing().when(userEventProducer).sendUserCreatedEvent(any(UserEvent.class));
 
-        UserDto result = userService.createUser(userDto);
+        UserResponse result = userService.createUser(userDto);
 
         assertNotNull(result);
         assertEquals("John Doe", result.getName());
@@ -79,7 +69,7 @@ class UserServiceTest {
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
-        UserDto result = userService.getUser(1L);
+        UserResponse result = userService.getUser(1L);
 
         assertNotNull(result);
         assertEquals(1L, result.getId());
@@ -112,7 +102,7 @@ class UserServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
         when(userRepository.save(any(User.class))).thenReturn(updatedUser);
 
-        UserDto result = userService.updateUser(userDto);
+        UserResponse result = userService.updateUser(userDto);
 
         assertNotNull(result);
         assertEquals("Updated Name", result.getName());

@@ -71,7 +71,7 @@ public class UserAuthenticationServiceImpl implements UserAuthenticationService 
                 : null;
 
         log.info("Login successful - id: {}, name: {}, email: {}", user.getId(), user.getName(), user.getEmail());
-        return new AuthResponse(accessToken, refreshToken.getToken(), user.getId(), user.getName(), user.getEmail(), profileImageUrl);
+        return new AuthResponse(accessToken, refreshToken.getToken(), user.getId(), user.getName(), user.getEmail(), profileImageUrl,user.getRole());
     }
 
     @Override

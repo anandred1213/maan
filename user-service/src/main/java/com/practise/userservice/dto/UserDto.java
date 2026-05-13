@@ -1,10 +1,13 @@
 package com.practise.userservice.dto;
 
+import jakarta.validation.constraints.NotBlank;
+
 public class UserDto {
     private Long id;
     private String name;
     private String email;
     private String password;
+    @NotBlank(message = "confirm field should not be blank")
     private String confirmPassword;
 
     public Long getId() {

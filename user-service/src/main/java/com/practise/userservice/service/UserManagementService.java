@@ -1,13 +1,14 @@
 package com.practise.userservice.service;
 
 import com.practise.userservice.dto.UserDto;
+import com.practise.userservice.dto.UserResponse;
 
 import java.util.List;
 
 public interface UserManagementService {
-    UserDto createUser(UserDto userDto);
-    UserDto getUser(Long id);
-    UserDto updateUser(UserDto userDto);
+    UserResponse createUser(UserDto userDto);
+    UserResponse getUser(Long id);
+    UserResponse updateUser(UserDto userDto);
     void deleteUser(Long id);
-    List<UserDto> getAllUsers();
+    List<UserResponse> getAllUsers();
 }
