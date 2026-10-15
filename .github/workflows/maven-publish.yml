@@ -6,6 +6,7 @@ name: Maven Package
 on:
   release:
     types: [created]
+   workflow_dispath:
 
 jobs:
   build:
