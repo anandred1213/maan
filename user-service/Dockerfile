@@ -9,7 +9,7 @@ COPY pom.xml .
 
 # Download dependencies (cached layer)
 RUN mvn dependency:go-offline
-
+#test
 # Copy source code
 COPY src ./src
 
